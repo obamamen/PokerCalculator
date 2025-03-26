@@ -173,8 +173,30 @@ namespace PokerCalculator
                 }
             }
             return -1;
-            #endregion
         }
+        public static int FullHouse(ulong hand)
+        {
+            Utility.ThrowBasedOnHand(hand);
+            int three = ThreeOfAKind(hand);
+            if (three == -1)
+            {
+                return -1;
+            }
+            int pair = Pair(hand & ~Highcards[three]);
+            if (pair == -1)
+            {
+                return -1;
+            }
+            if (three >= pair)
+            {
+                return three;
+            }
+            else
+            {
+                return pair;
+            }
+        }
+        #endregion
     }
     public static class Utility
     {
