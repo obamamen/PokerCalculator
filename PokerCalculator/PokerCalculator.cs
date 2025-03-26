@@ -196,6 +196,60 @@ namespace PokerCalculator
                 return pair;
             }
         }
+        public static int FourOfAkind(ulong hand)
+        {
+            Utility.ThrowBasedOnHand(hand);
+
+            for (int i = (int)Rank.Ace; i >= (int)Rank.Two; i--)
+            {
+                if (ulong.PopCount(hand & Highcards[i]) >= 4)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+        public static int StraightFlush(ulong hand)
+        {
+            Utility.ThrowBasedOnHand(hand);
+            int highest = -1;
+            int score;
+            ulong section;
+            for (int i = 0; i < Constants.SUITES; i++)
+            {
+                section = hand & Utility.CreateSection((Suit)i);
+                if (section == 0UL)
+                {
+                    continue;
+                }
+                score = Straight(section);
+                if (score > highest)
+                {
+                    highest = score;
+                }
+            }
+
+            return highest;
+        }
+        public static int RoyalFlush(ulong hand)
+        {
+            Utility.ThrowBasedOnHand(hand);
+            ulong section;
+            for (int i = 0; i < Constants.SUITES; i++)
+            {
+                section = hand & Utility.CreateSection((Suit)i);
+                section = Utility.HandToNormalized(section);
+                if (ulong.PopCount(section) >= 5)
+                {
+                    if ((section & Constants.STRAIGHTMASKS[0]) == Constants.STRAIGHTMASKS[0])
+                    {
+                        return (int)Rank.Ace;
+                    }
+                }
+            }
+            return -1;
+        }
         #endregion
     }
     public static class Utility
@@ -226,6 +280,29 @@ namespace PokerCalculator
         internal static string ToBinaryString(ulong value)
         {
             return Convert.ToString((long)value, 2).PadLeft(64, '0');
+        }
+        internal static string ToNiceBinaryString(ulong value)
+        {
+            StringBuilder sb = new();
+            for (int s = 0; s < Constants.SUITES; s++)
+            {
+                for (int r = 0; r < Constants.RANKS; r++)
+                {
+                    if ((Utility.SetBit((Rank)r, (Suit)s) & value) == Utility.SetBit((Rank)r, (Suit)s))
+                    {
+                        sb.Append("1");
+                    }
+                    else
+                    {
+                        sb.Append("0");
+                    }
+                }
+                if (s < Constants.SUITES - 1)
+                {
+                    sb.Append("\n");
+                }
+            }
+            return sb.ToString();
         }
         #endregion
 
