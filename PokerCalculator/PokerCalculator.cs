@@ -95,6 +95,7 @@ namespace PokerCalculator
             }
             if (bestHandScore != -1)
             {
+                return bestPlayer;
                 processEvaluationName("RoyalFlush");
             }
 
@@ -114,8 +115,8 @@ namespace PokerCalculator
             }
             if (bestHandScore != -1)
             {
-                Console.WriteLine("StraightFlush");
                 return bestPlayer;
+                Console.WriteLine("StraightFlush");
             }
 
             // Evaluate FourOfAKind
@@ -134,8 +135,8 @@ namespace PokerCalculator
             }
             if (bestHandScore != -1)
             {
-                processEvaluationName("FourOfAKind");
                 return bestPlayer;
+                processEvaluationName("FourOfAKind");
             }
 
             // Evaluate FullHouse
@@ -154,8 +155,8 @@ namespace PokerCalculator
             }
             if (bestHandScore != -1)
             {
-                processEvaluationName("FullHouse");
                 return bestPlayer;
+                processEvaluationName("FullHouse");
             }
 
             // Evaluate Flush
@@ -174,8 +175,8 @@ namespace PokerCalculator
             }
             if (bestHandScore != -1)
             {
-                processEvaluationName("Flush");
                 return bestPlayer;
+                processEvaluationName("Flush");
             }
 
             // Evaluate Straight
@@ -194,8 +195,8 @@ namespace PokerCalculator
             }
             if (bestHandScore != -1)
             {
-                processEvaluationName("Straight");
                 return bestPlayer;
+                processEvaluationName("Straight");
             }
 
             // Evaluate ThreeOfAKind
@@ -214,8 +215,8 @@ namespace PokerCalculator
             }
             if (bestHandScore != -1)
             {
-                processEvaluationName("ThreeOfAKind");
                 return bestPlayer;
+                processEvaluationName("ThreeOfAKind");
             }
 
             // Evaluate TwoPair
@@ -234,8 +235,8 @@ namespace PokerCalculator
             }
             if (bestHandScore != -1)
             {
-                processEvaluationName("TwoPair");
                 return bestPlayer;
+                processEvaluationName("TwoPair");
             }
 
             // Evaluate Pair
@@ -254,8 +255,8 @@ namespace PokerCalculator
             }
             if (bestHandScore != -1)
             {
-                processEvaluationName("Pair");
                 return bestPlayer;
+                processEvaluationName("Pair");
             }
 
             // Evaluate HighCard
@@ -274,8 +275,8 @@ namespace PokerCalculator
             }
             if (bestHandScore != -1)
             {
-                processEvaluationName("HighCard");
                 return bestPlayer;
+                processEvaluationName("HighCard");
             }
 
             return bestPlayer;
