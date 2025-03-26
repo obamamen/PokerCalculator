@@ -8,30 +8,40 @@ namespace PokerCalculator
         {
             Calculator.Setup();
             Action<string> action = Console.WriteLine;
-            ulong hand = Utility.CreateCard(12, 0) | Utility.CreateCard(12,3);
+            ulong handp1 = Utility.CreateCard(12, 0) | Utility.CreateCard(12,3);
+            ulong handp2 = Utility.CreateCard(2, 0) | Utility.CreateCard(2, 3);
             uint total = 0;
             uint wins = 0;
+            uint ties = 0;
+            uint losses = 0;
 
-            for (int i = 0; i < 1000000; i++)
+            for (int i = 0; i < 10000000; i++)
             {
-                ulong activePool = Generator.FullDeck ^ hand;
+                total++;
+                ulong activePool = Generator.FullDeck ^ (handp1|handp2);
 
-                ulong hand1 = hand;
-                ulong hand2 = Generator.GenerateRandomHand(2, ref activePool);
+                ulong hand1 = handp1;
+                ulong hand2 = handp2;
                 ulong community = Generator.GenerateRandomHand(5, ref activePool);
 
                 ulong[] players = [hand1, hand2];
                 int winner = Calculator.Calculate(community, players);
-                if (winner != -1)
+                if (winner == -1)
                 {
-                    total++;
+                    ties++;
                 }
                 if (winner == 0)
                 {
                     wins++;
                 }
+                if (winner == 1)
+                {
+                    losses++;
+                }
             }
-            Console.WriteLine($"%{((double)wins/(double)total)*100}");
+            Console.WriteLine($" wins %{((double)wins/(double)total)*100}");
+            Console.WriteLine($" ties %{((double)ties / (double)total) * 100}");
+            Console.WriteLine($" losses %{((double)losses / (double)total) * 100}");
         }
     }
 }
