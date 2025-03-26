@@ -6,24 +6,22 @@
         {
             Calculator.Setup();
 
-            ulong hand = 0;
-            hand |= Utility.CreateCard(Rank.Ace, (Suit)1);
-            hand |= Utility.CreateCard(Rank.King, (Suit)1);
-            hand |= Utility.CreateCard(Rank.Queen, (Suit)2);
-            hand |= Utility.CreateCard(Rank.Jack, (Suit)1);
-            hand |= Utility.CreateCard(Rank.Ten, (Suit)1);
-            hand |= Utility.CreateCard(Rank.Ace, (Suit)2);
-            hand |= Utility.CreateCard(Rank.Ace, (Suit)1);
-            Console.WriteLine(Utility.ToNiceBinaryString((hand)));
+            ulong activePool = Generator.FullDeck;
 
-            Console.WriteLine((Rank)Calculator.RoyalFlush(hand));
+            ulong hand1 = Utility.CreateCard(2, 0) | Utility.CreateCard(3, 0);
+            ulong hand2 = Utility.CreateCard(13, 0) | Utility.CreateCard(5, 0);
+            ulong community = Utility.CreateCard(2, 2) | Utility.CreateCard(3, 3) | Utility.CreateCard(3, 1) | Utility.CreateCard(6, 1) | Utility.CreateCard(7, 2);
+
+            ulong[] players = [hand1,hand2];
+            int winner = Calculator.Calculate(community, players, true);
 
 
+            Console.WriteLine(Utility.ToNiceBinaryString(hand1) + "\n");
+            Console.WriteLine(Utility.ToNiceBinaryString(hand2) + "\n");
+            Console.WriteLine(Utility.ToNiceBinaryString(community) + "\n");
+            Console.WriteLine(Utility.ToNiceBinaryString(community|hand1|hand2) + "\n");
 
-            //foreach (ulong u in Calculator.Highcards)
-            //{
-            //    Console.WriteLine(Utility.ToBinaryString(u));
-            //}
+            Console.WriteLine("Winner: " + winner);
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
+using System.Numerics;
 
 namespace PokerCalculator
 {
@@ -15,7 +16,7 @@ namespace PokerCalculator
         public static readonly int RANKS = 13;
 
         public static readonly ulong[] STRAIGHTMASKS =
-        {   
+        {
             0b00001111100000000UL, // A-high straight (10, J, Q, K, A)
             0b00000111110000000UL, // K-high straight (9, 10, J, Q, K)
             0b00000011111000000UL, // Q-high straight (8, 9, 10, J, Q)
@@ -27,6 +28,12 @@ namespace PokerCalculator
             0b00000000000011111UL, // 6-high straight (2, 3, 4, 5, 6)
             0b00001000000001111UL, // 5-high straight (A, 2, 3, 4, 5)
         };
+
+        //public static readonly Func<ulong, int>[] HANDEVALUATORS = new Func<ulong, int>[]
+        //{
+        //    Calculator.RoyalFlush, Calculator.StraightFlush, Calculator.FourOfAKind, Calculator.FullHouse,
+        //    Calculator.Flush, Calculator.Straight, Calculator.ThreeOfAKind, Calculator.TwoPair, Calculator.Pair, Calculator.HighCard
+        //};
     }
     public enum Suit
     {
@@ -55,6 +62,7 @@ namespace PokerCalculator
     }
     public static class Calculator
     {
+        delegate int HandEvaluator(ulong hand);
         public static void Setup()
         {
             for (int i = 0; i < (int)Rank.RANKS; i++)
@@ -63,8 +71,41 @@ namespace PokerCalculator
             }
         }
         public static ulong[] Highcards = new ulong[(int)Rank.RANKS];
-        public static int Calculate()
+        public static int Calculate(ulong communityCards, ulong[] playerCards, bool printResults = false)
         {
+            int pcount = playerCards.Length;
+
+            int bestPlayer = -1;
+            int bestHandScore = -1;
+
+            int p = 0;
+            int score = -1;
+            foreach (var evaluateHand in Constants.HANDEVALUATORS)
+            {
+                bestPlayer = -1;
+                bestHandScore = -1;
+                for (p = 0; p < pcount; p++)
+                {
+                    score = evaluateHand(communityCards | playerCards[p]);
+                    Console.WriteLine((Rank)score);
+                    if (score > bestHandScore)
+                    {
+                        bestHandScore = score;
+                        bestPlayer = p;
+                    }
+                    if ((score == bestHandScore) && (bestHandScore != -1))
+                    {
+                        Console.WriteLine("Tie");
+                        //return -1;
+                    }
+                }
+
+                if (bestHandScore != -1)
+                {
+                    Console.WriteLine($"Best hand: {evaluateHand.ToString()} for player {bestPlayer}");
+                    return bestPlayer;
+                }
+            }
             return -1;
         }
         #region Hand values
@@ -196,7 +237,7 @@ namespace PokerCalculator
                 return pair;
             }
         }
-        public static int FourOfAkind(ulong hand)
+        public static int FourOfAKind(ulong hand)
         {
             Utility.ThrowBasedOnHand(hand);
 
@@ -258,6 +299,10 @@ namespace PokerCalculator
         public static ulong CreateCard(Rank rank, Suit suit)
         {
             return SetBit(rank, suit);
+        }
+        public static ulong CreateCard(int rank, int suit, bool DO_NOT_USE = true)
+        {
+            return SetBit((Rank)rank, (Suit)suit);
         }
         public static void AddCard(ref ulong cards, Rank rank, Suit suit)
         {
@@ -358,5 +403,65 @@ namespace PokerCalculator
             }
         }
         #endregion
+    }
+    public static class Generator
+    {
+        public static Random R = new Random();
+
+        public static readonly ulong FullDeck = GenerateFullDeck();
+
+        public static ulong GenerateRandomHand(int count, ref ulong activePool)
+        {
+            if (ulong.PopCount(activePool) < (ulong)count)
+            {
+                throw new ArgumentException("Not enough cards in the pool");
+            }
+
+            ulong hand = 0UL;
+            for (int i = 0; i < count; i++)
+            {
+                int bitIndex = GetRandomSetBit(activePool, R);
+                ulong selectedCard = 1UL << bitIndex;
+
+                hand |= selectedCard;
+                activePool ^= selectedCard;
+            }
+            return hand;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int GetRandomSetBit(ulong bitmask, Random rand)
+        {
+            int popCount = (int)ulong.PopCount(bitmask);
+            int target = rand.Next(popCount) + 1;
+            int bitIndex = 0;
+
+            while (target > 0)
+            {
+                int tzCount = BitOperations.TrailingZeroCount(bitmask);
+                bitIndex += tzCount;
+                bitmask >>= tzCount;
+                target--;
+
+                if (target > 0)
+                {
+                    bitmask >>= 1;
+                    bitIndex++;
+                }
+            }
+            return bitIndex;
+        }
+        private static ulong GenerateFullDeck()
+        {
+            ulong deck = 0UL;
+            for (int suit = 0; suit < Constants.SUITES; suit++)
+            {
+                for (int rank = 0; rank < Constants.RANKS; rank++)
+                {
+                    deck |= Utility.CreateCard((Rank)rank, (Suit)suit);
+                }
+            }
+            return deck;
+        }
     }
 }
