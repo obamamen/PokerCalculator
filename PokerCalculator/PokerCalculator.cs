@@ -29,6 +29,13 @@ namespace PokerCalculator
             Calculator.Results results = Calculator.Calculate(iter, 0UL, 0UL, 0UL);
             results.Display();
         }
+
+        public static void Test252525(int iter = 2000000)
+        {
+            Console.WriteLine("Testing a fair 25 25 25");
+            Calculator.Results results = Calculator.Calculate(iter, 0UL, 0UL, 0UL, 0UL, 0UL);
+            results.Display();
+        }
     }
     public static class Constants
     {
@@ -106,7 +113,7 @@ namespace PokerCalculator
             {
                 for (int i = 0; i < Wins.Length; i++)
                 {
-                    Console.WriteLine($"Wins for hand {i + 1}: {Math.Round(((float)Wins[i] / (float)Total) * 10000) / 100:F2}%");
+                    Console.WriteLine($"Wins for hand {i + 1}: {Math.Round(((float)Wins[i] / (float)Total) * 10000) / 100:F1}%");
                 }
                 Console.WriteLine($"Ties: {Math.Round(((float)Ties / (float)Total) * 10000) / 100:F2}%");
             }
@@ -338,6 +345,8 @@ namespace PokerCalculator
         public static int GetHandScore(ulong hand)
         {
             int score = 0;
+
+
             for (int i = 1; i <= 2; i++)
             {
                 score += (SingleHighcardRemove(ref hand) + ((Constants.RANKS+2) * i));
