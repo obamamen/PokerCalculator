@@ -57,12 +57,13 @@ namespace PokerCalculator
             0b00000000000011111UL, // 6-high straight (2, 3, 4, 5, 6)
             0b00001000000001111UL, // 5-high straight (A, 2, 3, 4, 5)
         };
+        // binary normilized values for the straights
 
-        public static readonly Func<ulong, int>[] HANDEVALUATORS = new Func<ulong, int>[]
-        {
-            Calculator.RoyalFlush, Calculator.StraightFlush, Calculator.FourOfAKind, Calculator.FullHouse,
-            Calculator.Flush, Calculator.Straight, Calculator.ThreeOfAKind, Calculator.TwoPair, Calculator.Pair, Calculator.HighCard
-        };
+        //public static readonly Func<ulong, int>[] HANDEVALUATORS = new Func<ulong, int>[]
+        //{
+        //    Calculator.RoyalFlush, Calculator.StraightFlush, Calculator.FourOfAKind, Calculator.FullHouse,
+        //    Calculator.Flush, Calculator.Straight, Calculator.ThreeOfAKind, Calculator.TwoPair, Calculator.Pair, Calculator.HighCard
+        //};
     }
     public enum Suit
     {
@@ -117,6 +118,8 @@ namespace PokerCalculator
                 }
                 Console.WriteLine($"Ties: {Math.Round(((float)Ties / (float)Total) * 10000) / 100:F2}%");
             }
+            // display all the win% and tie% for the Results
+            // uses xx.x format for the win% and xx.xx for the tie%
         }
         delegate int HandEvaluator(ulong hand);
         public static void Setup()
@@ -125,6 +128,7 @@ namespace PokerCalculator
             {
                 Highcards[i] = Utility.ApplyNormalized(Utility.CreateNomilized((Rank)i));
             }
+            // precalculate the normalized values for the highcards
         }
         public static ulong[] Highcards = new ulong[(int)Rank.RANKS];
         public static Results Calculate(int iterations = 100000, ulong communityCardsPreset = 0UL, params ulong[] hands)
@@ -142,23 +146,29 @@ namespace PokerCalculator
             for (int i = 0; i < iterations; i++)
             {
                 ulong activePool = Generator.FullDeck;
+                // get a pool of all the valid poker cards
+
                 for (int j = 0; j < hands.Length; j++)
                 {
                     if (hands[j] == 0UL)
+                    // if the hand is empty then we generate a random hand, empty meaning that the user has not set a hand.
                     {
                         playerHands[j] = Generator.GenerateRandomHand(2, ref activePool);
                     }
                     else
+                    // the user has set a hand so we use that hand and remove it from the active pool.
                     {
                         activePool ^= hands[j];
                         playerHands[j] = hands[j];
                     }
                 }
+
                 int bitcount = (int)ulong.PopCount(communityCardsPreset);
                 if (bitcount < 5)
                 {
                     communityCards = Generator.GenerateRandomHand(5 - bitcount, ref activePool) | communityCardsPreset;
                 }
+                // here we generate the community cards, if the user has any set community cards we keep it and generate the rest.
 
                 int winner = Winner(communityCards, playerHands);
                 if (winner == -1)
@@ -240,15 +250,21 @@ namespace PokerCalculator
                         scores[p] = score;
                         scoresOnlyHand[p] = GetHandScore(playerCards[p]);
                     }
+                    // if we have a score then we set the score for the player and also the score for the players hand.
+                    // we only have a score if the player has a hand that complies with the type.
 
                     if (score > bestHandScore)
                     {
                         bestHandScore = score;
                         bestPlayer = p;
                     }
+                    // if we have a higher score, 
+                    // higher score means higher score based on the hand and community cards.
+                    // based on the functions, so a acePair is higer score than a 4Pair or 7pair.
                 }
 
-                if (IsTie(scores)) // if there is a tie between the full hands from any players.
+                if (IsTie(scores))
+                // if there is a tie between the full hands from any players.
                 {
                     int highestHandScore = Utility.GetHighest(scores);
                     for (int i = 0; i < pcount; i++)
@@ -260,7 +276,8 @@ namespace PokerCalculator
                     }
                     // Only calculate the tie values for the players that passes the first tie check; meaning that only the players in the tie will have a score.
 
-                    if (IsTie(scoresOnlyHand)) // check if there is a tie in the players hand ONLY, if so then we have an actual game tie.
+                    if (IsTie(scoresOnlyHand))
+                    // check if there is a tie in the players hand ONLY, if so then we have an actual game tie.
                     {
                         return -1;
                     }
@@ -278,7 +295,7 @@ namespace PokerCalculator
                 }
             }
 
-            throw new InvalidOperationException("[No winner found] bug");
+            throw new InvalidOperationException("[No winner found or Tie] bug");
             // A big has happend here please no
         }
 
