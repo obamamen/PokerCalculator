@@ -8,11 +8,9 @@ namespace PokerCalculator
         {
             Calculator.Setup();
 
-            Testing.Test5050();
-            Console.WriteLine();
-            Testing.TestOffsuit27();
-            Console.WriteLine();
-            Testing.TestPocketAces();
+            ulong hand1 = Utility.CreateCard(Rank.Queen,Suit.Hearts) | Utility.CreateCard(Rank.Ace, Suit.Clubs);
+
+            Calculator.Calculate(5000000, 0UL, (ulong)hand1, 0UL, 0UL).Display();
         }
     }
 }

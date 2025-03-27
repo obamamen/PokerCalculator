@@ -106,9 +106,9 @@ namespace PokerCalculator
             {
                 for (int i = 0; i < Wins.Length; i++)
                 {
-                    Console.WriteLine($"Wins for hand {i + 1}: {Math.Ceiling(((float)Wins[i] / (float)Total) * 1000) / 10:F1}%");
+                    Console.WriteLine($"Wins for hand {i + 1}: {Math.Round(((float)Wins[i] / (float)Total) * 10000) / 100:F2}%");
                 }
-                Console.WriteLine($"Ties: {Math.Ceiling(((float)Ties / (float)Total) * 1000) / 10:F1}%");
+                Console.WriteLine($"Ties: {Math.Round(((float)Ties / (float)Total) * 10000) / 100:F2}%");
             }
         }
         delegate int HandEvaluator(ulong hand);
@@ -340,7 +340,7 @@ namespace PokerCalculator
             int score = 0;
             for (int i = 1; i <= 2; i++)
             {
-                score += (SingleHighcardRemove(ref hand) * i);
+                score += (SingleHighcardRemove(ref hand) + ((Constants.RANKS+2) * i));
             }
 
             return score;
