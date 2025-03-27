@@ -300,44 +300,47 @@ namespace PokerCalculator
         }
 
         #region Tie helpers
-        public static int TieUsingHighcards(ulong[] playerHands)
-        {
-            int count = playerHands.Length;
-            ulong[] playerHandsCopy = playerHands.ToArray();
+        //public static int TieUsingHighcards(ulong[] playerHands)
+        //{
+        //    int count = playerHands.Length;
+        //    ulong[] playerHandsCopy = playerHands.ToArray();
 
-            Span<int> scores = stackalloc int[count];
-            int highest = -1;
+        //    Span<int> scores = stackalloc int[count];
+        //    int highest = -1;
 
-            for (int i = 0; i < count; i++)
-            {
-                scores[i] = SingleHighcardRemove(ref playerHands[i]);
-                if (scores[i] > highest)
-                {
-                    highest = scores[i];
-                }
-            }
+        //    for (int i = 0; i < count; i++)
+        //    {
+        //        scores[i] = SingleHighcardRemove(ref playerHands[i]);
+        //        if (scores[i] > highest)
+        //        {
+        //            highest = scores[i];
+        //        }
+        //    }
 
-            int ties = 0;
-            int bestPlayer = -1;
-            for (int i = 0; i < count; i++)
-            {
-                if (scores[i] == highest)
-                {
-                    ties++;
-                    bestPlayer = i;
-                }
-            }
-            if (ties == 1)
-            {
-                return bestPlayer;
-            }
-            if (ties > 1)
-            {
-                return -1;
-            }
+        //    int ties = 0;
+        //    int bestPlayer = -1;
+        //    for (int i = 0; i < count; i++)
+        //    {
+        //        if (scores[i] == highest)
+        //        {
+        //            ties++;
+        //            bestPlayer = i;
+        //        }
+        //    }
+        //    if (ties == 1)
+        //    {
+        //        return bestPlayer;
+        //    }
+        //    if (ties > 1)
+        //    {
+        //        return -1;
+        //    }
 
-            return -1;
-        }
+        //    return -1;
+        //}
+
+        // currently not in use.
+
         public static int SingleHighcardRemove(ref ulong hand)
         {
             if (hand == 0UL)
@@ -357,12 +360,20 @@ namespace PokerCalculator
                     }
                 }
             }
+
+            // for each rank and suite we check if the hand has the card, if so we remove it and return the rank.
+
             return -1;
         }
         public static int GetHandScore(ulong hand)
         {
-            int score = SingleHighcardRemove(ref hand);
+            int score = SingleHighcardRemove(ref hand)+Constants.RANKS*2;
+
+            // we need to give the highest card some priority based on the texas holdem rules.
+
             score += HighCard(hand);
+
+            // than if the first card is the same, the second card gives a smaller score, meaning it can still shift tie situations.
 
             return score;
         }
@@ -428,7 +439,8 @@ namespace PokerCalculator
             ulong count;
             for (int i = (int)Rank.Ace; i >= (int)Rank.Two; i--)
             {
-                count = ulong.PopCount(hand & Highcards[i]); // counts the bits in the full applied normalied of the rank (:
+                count = ulong.PopCount(hand & Highcards[i]);
+                // counts the bits in the full applied normalied of the rank (:
 
                 if (count >= 2)
                 {
@@ -438,12 +450,14 @@ namespace PokerCalculator
                         highest = i;
                     }
                 }
-                if (count == (ulong)Constants.SUITES)// if we lets say have 4 aces we actually also have 2 pairs of aces
+                if (count == (ulong)Constants.SUITES)
+                // if we lets say have 4 aces we actually also have 2 pairs of aces
                 {
                     return i;
                 }
             }
-            if (pairCount >= 2)// if we have 2 or more pairs then return the highest pair
+            if (pairCount >= 2)
+            // if we have 2 or more pairs then return the highest pair
             {
                 return highest;
             }
@@ -472,9 +486,11 @@ namespace PokerCalculator
             for (int i = 0; i < Constants.STRAIGHTMASKS.Length; i++)
             {
                 if ((hand & Constants.STRAIGHTMASKS[i]) == Constants.STRAIGHTMASKS[i])
+                // we can check if the hand has the straight by checking if the hand has the straight mask. These masks are explained in the Constants class.
                 {
                     return (int)Rank.Ace - i;
                 }
+                // why i reverse it beacuse the straight masks are in reverse order, so the first mask is the highest straight.
             }
 
             return -1;
@@ -501,11 +517,15 @@ namespace PokerCalculator
             {
                 return -1;
             }
+
             int pair = Pair(hand & ~Highcards[three]);
+            // here we remove all the cards that are the same suit as the three of a kind, so we dont get a false positive.
+
             if (pair == -1)
             {
                 return -1;
             }
+
             if (three >= pair)
             {
                 return three;
@@ -514,6 +534,8 @@ namespace PokerCalculator
             {
                 return pair;
             }
+            // here we return the biggest of the 2 "sets", is needed for tie handling.
+
         }
         public static int FourOfAKind(ulong hand)
         {
@@ -538,6 +560,9 @@ namespace PokerCalculator
             for (int i = 0; i < Constants.SUITES; i++)
             {
                 section = hand & Utility.CreateSection((Suit)i);
+                // we split the hand into 4 sections , one for each suite.
+                // so no handtonormilzed beacuse that would remove the suit depth and thus we would not be able to check for a StraightFlush.
+
                 if (section == 0UL)
                 {
                     continue;
@@ -547,6 +572,9 @@ namespace PokerCalculator
                 {
                     highest = score;
                 }
+                // !!! 
+                //  /// /// NEEDS TESTING: I might be able to just return here but I am not sure if that would work 100%.
+                // !!!
             }
 
             return highest;
@@ -566,6 +594,7 @@ namespace PokerCalculator
                         return (int)Rank.Ace;
                     }
                 }
+                // this is the same as the straight flush but we only get the highest straight flush and if so then we return an ace.
             }
             return -1;
         }
@@ -574,29 +603,32 @@ namespace PokerCalculator
     public static class Utility
     {
         #region Array
-        public static int[] GetAllTheHighest(Span<int> array, int highest)
-        {
-            int count = 0;
-            for (int i = 0; i < array.Length; i++)
-            {
-                if (array[i] == highest)
-                {
-                    count++;
-                }
-            }
+        //public static int[] GetAllTheHighest(Span<int> array, int highest)
+        //{
+        //    int count = 0;
+        //    for (int i = 0; i < array.Length; i++)
+        //    {
+        //        if (array[i] == highest)
+        //        {
+        //            count++;
+        //        }
+        //    }
 
-            int[] result = new int[count];
-            int index = 0;
-            for (int i = 0; i < array.Length; i++)
-            {
-                if (array[i] == highest)
-                {
-                    result[index] = i;
-                    index++;
-                }
-            }
-            return result;
-        }
+        //    int[] result = new int[count];
+        //    int index = 0;
+        //    for (int i = 0; i < array.Length; i++)
+        //    {
+        //        if (array[i] == highest)
+        //        {
+        //            result[index] = i;
+        //            index++;
+        //        }
+        //    }
+        //    return result;
+        //}
+
+        // unsed code
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetHighest(Span<int> array)
         {
