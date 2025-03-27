@@ -22,7 +22,7 @@ namespace PokerCalculator
             Console.WriteLine($"Player 2 score: {score2}");
             Console.WriteLine();
 
-            for (int i = 0; i < 200000; i++)
+            for (int i = 0; i < 2000000; i++)
             {
                 total++;
                 ulong activePool = Generator.FullDeck ^ (handp1 | handp2);

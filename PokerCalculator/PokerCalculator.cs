@@ -83,6 +83,11 @@ namespace PokerCalculator
 
             Span<int> scores = stackalloc int[pcount];
             Span<int> scoresOnlyHand = stackalloc int[pcount];
+            for (int i = 0; i < pcount; i++)
+            {
+                scores[i] = -1;
+                scoresOnlyHand[i] = -1;
+            }
 
             for (int t = 0; t < 10; t++)
             {
@@ -123,14 +128,21 @@ namespace PokerCalculator
                             score = Calculator.HighCard(communityCards | playerCards[p]);
                             break;
                     }
-                    if ((bestHandScore != -1) && (score == bestHandScore))
+                    if (score != -1)
                     {
-                        return -1;
+                        scores[p] = score;
+                        scoresOnlyHand[p] = GetHandScore(playerCards[p]);
                     }
+
                     if (score > bestHandScore)
                     {
                         bestHandScore = score;
                         bestPlayer = p;
+                    }
+
+                    if (IsTie(scores))
+                    {
+                        return -1;
                     }
                 }
                 if (bestHandScore != -1)
@@ -140,188 +152,6 @@ namespace PokerCalculator
             }
 
             return -1;
-
-            //// Evaluate StraightFlush
-            //for (p = 0; p < pcount; p++)
-            //{
-            //    score = Calculator.StraightFlush(communityCards | playerCards[p]);
-            //    if ((bestHandScore != -1) && (score == bestHandScore))
-            //    {
-            //        return -1;
-            //    }
-            //    if (score > bestHandScore)
-            //    {
-            //        bestHandScore = score;
-            //        bestPlayer = p;
-            //    }
-            //}
-            //if (bestHandScore != -1)
-            //{
-            //    return bestPlayer;
-            //    Console.WriteLine("StraightFlush");
-            //}
-
-            //// Evaluate FourOfAKind
-            //for (p = 0; p < pcount; p++)
-            //{
-            //    score = Calculator.FourOfAKind(communityCards | playerCards[p]);
-            //    if ((bestHandScore != -1) && (score == bestHandScore))
-            //    {
-            //        return -1;
-            //    }
-            //    if (score > bestHandScore)
-            //    {
-            //        bestHandScore = score;
-            //        bestPlayer = p;
-            //    }
-            //}
-            //if (bestHandScore != -1)
-            //{
-            //    return bestPlayer;
-            //    processEvaluationName("FourOfAKind");
-            //}
-
-            //// Evaluate FullHouse
-            //for (p = 0; p < pcount; p++)
-            //{
-            //    score = Calculator.FullHouse(communityCards | playerCards[p]);
-            //    if ((bestHandScore != -1) && (score == bestHandScore))
-            //    {
-            //        return -1;
-            //    }
-            //    if (score > bestHandScore)
-            //    {
-            //        bestHandScore = score;
-            //        bestPlayer = p;
-            //    }
-            //}
-            //if (bestHandScore != -1)
-            //{
-            //    return bestPlayer;
-            //    processEvaluationName("FullHouse");
-            //}
-
-            //// Evaluate Flush
-            //for (p = 0; p < pcount; p++)
-            //{
-            //    score = Calculator.Flush(communityCards | playerCards[p]);
-            //    if ((bestHandScore != -1) && (score == bestHandScore))
-            //    {
-            //        return -1;
-            //    }
-            //    if (score > bestHandScore)
-            //    {
-            //        bestHandScore = score;
-            //        bestPlayer = p;
-            //    }
-            //}
-            //if (bestHandScore != -1)
-            //{
-            //    return bestPlayer;
-            //    processEvaluationName("Flush");
-            //}
-
-            //// Evaluate Straight
-            //for (p = 0; p < pcount; p++)
-            //{
-            //    score = Calculator.Straight(communityCards | playerCards[p]);
-            //    if ((bestHandScore != -1) && (score == bestHandScore))
-            //    {
-            //        return -1;
-            //    }
-            //    if (score > bestHandScore)
-            //    {
-            //        bestHandScore = score;
-            //        bestPlayer = p;
-            //    }
-            //}
-            //if (bestHandScore != -1)
-            //{
-            //    return bestPlayer;
-            //    processEvaluationName("Straight");
-            //}
-
-            //// Evaluate ThreeOfAKind
-            //for (p = 0; p < pcount; p++)
-            //{
-            //    score = Calculator.ThreeOfAKind(communityCards | playerCards[p]);
-            //    if ((bestHandScore != -1) && (score == bestHandScore))
-            //    {
-            //        return -1;
-            //    }
-            //    if (score > bestHandScore)
-            //    {
-            //        bestHandScore = score;
-            //        bestPlayer = p;
-            //    }
-            //}
-            //if (bestHandScore != -1)
-            //{
-            //    return bestPlayer;
-            //    processEvaluationName("ThreeOfAKind");
-            //}
-
-            //// Evaluate TwoPair
-            //for (p = 0; p < pcount; p++)
-            //{
-            //    score = Calculator.TwoPair(communityCards | playerCards[p]);
-            //    if ((bestHandScore != -1) && (score == bestHandScore))
-            //    {
-            //        return -1;
-            //    }
-            //    if (score > bestHandScore)
-            //    {
-            //        bestHandScore = score;
-            //        bestPlayer = p;
-            //    }
-            //}
-            //if (bestHandScore != -1)
-            //{
-            //    return bestPlayer;
-            //    processEvaluationName("TwoPair");
-            //}
-
-            //// Evaluate Pair
-            //for (p = 0; p < pcount; p++)
-            //{
-            //    score = Calculator.Pair(communityCards | playerCards[p]);
-            //    if ((bestHandScore != -1) && (score == bestHandScore))
-            //    {
-            //        return -1;
-            //    }
-            //    if (score > bestHandScore)
-            //    {
-            //        bestHandScore = score;
-            //        bestPlayer = p;
-            //    }
-            //}
-            //if (bestHandScore != -1)
-            //{
-            //    return bestPlayer;
-            //    processEvaluationName("Pair");
-            //}
-
-            //// Evaluate HighCard
-            //for (p = 0; p < pcount; p++)
-            //{
-            //    score = Calculator.HighCard(communityCards | playerCards[p]);
-            //    if ((score == bestHandScore))
-            //    {
-            //        return -1;
-            //    }
-            //    if (score > bestHandScore)
-            //    {
-            //        bestHandScore = score;
-            //        bestPlayer = p;
-            //    }
-            //}
-            //if (bestHandScore != -1)
-            //{
-            //    return bestPlayer;
-            //    processEvaluationName("HighCard");
-            //}
-
-            //return bestPlayer;
         }
 
         #region Tie helpers
@@ -393,6 +223,24 @@ namespace PokerCalculator
             }
 
             return score;
+        }
+        public static bool IsTie(Span<int> scores, bool ignoreNegatives = true)
+        {
+            int highest = Utility.GetHighest(scores);
+            int count = 0;
+            for (int i = 0; i < scores.Length; i++)
+            {
+                if (scores[i] == highest)
+                {
+                    if (ignoreNegatives && scores[i] == -1)
+                    {
+                        continue;
+                    }
+                    count++;
+                }
+            }
+
+            return (count > 1);
         }
         #endregion
 
