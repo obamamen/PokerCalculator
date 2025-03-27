@@ -344,13 +344,8 @@ namespace PokerCalculator
         }
         public static int GetHandScore(ulong hand)
         {
-            int score = 0;
-
-
-            for (int i = 1; i <= 2; i++)
-            {
-                score += (SingleHighcardRemove(ref hand) + ((Constants.RANKS+2) * i));
-            }
+            int score = SingleHighcardRemove(ref hand);
+            score += HighCard(hand);
 
             return score;
         }
