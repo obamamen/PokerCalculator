@@ -5,9 +5,31 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using System.Numerics;
+using static PokerCalculator.Calculator;
 
 namespace PokerCalculator
 {
+    public static class Testing
+    {
+        public static void TestPocketAces(int iter = 2000000)
+        {
+            Console.WriteLine("Testing pocket aces");
+            Calculator.Results results = Calculator.Calculate(iter, 0UL, Utility.CreateCard(12, 0) | Utility.CreateCard(12, 1), 0UL);
+            results.Display();
+        }
+        public static void TestOffsuit27(int iter = 2000000)
+        {
+            Console.WriteLine("Testing offsuit 2 7");
+            Calculator.Results results = Calculator.Calculate(iter, 0UL, Utility.CreateCard(2, 0) | Utility.CreateCard(7, 1), 0UL);
+            results.Display();
+        }
+        public static void Test5050(int iter = 2000000)
+        {
+            Console.WriteLine("Testing a fair 50 50");
+            Calculator.Results results = Calculator.Calculate(iter, 0UL, 0UL, 0UL);
+            results.Display();
+        }
+    }
     public static class Constants
     {
         public static readonly ulong SECTION = 0x1FFF;
@@ -62,6 +84,33 @@ namespace PokerCalculator
     }
     public static class Calculator
     {
+        public struct Results
+        {
+            public int Total;
+            public int Ties;
+            public int[] Wins;
+            public readonly int GetLosses(int index)
+            {
+                if (index < 0)
+                {
+                    throw new IndexOutOfRangeException("Index cannot be negative");
+                }
+                if (index > Wins.Length)
+                {
+                    throw new IndexOutOfRangeException("Index cannot be bigger than the Wins[]");
+                }
+
+                return Total - Ties - Wins[index];
+            }
+            public readonly void Display()
+            {
+                for (int i = 0; i < Wins.Length; i++)
+                {
+                    Console.WriteLine($"Wins for hand {i + 1}: {Math.Ceiling(((float)Wins[i] / (float)Total) * 1000) / 10:F1}%");
+                }
+                Console.WriteLine($"Ties: {Math.Ceiling(((float)Ties / (float)Total) * 1000) / 10:F1}%");
+            }
+        }
         delegate int HandEvaluator(ulong hand);
         public static void Setup()
         {
@@ -71,7 +120,52 @@ namespace PokerCalculator
             }
         }
         public static ulong[] Highcards = new ulong[(int)Rank.RANKS];
-        public static int Calculate(ulong communityCards, ulong[] playerCards, Action<string> processEvaluationName = null)
+        public static Results Calculate(int iterations = 100000, ulong communityCardsPreset = 0UL, params ulong[] hands)
+        {
+
+            Results results = new Results();
+            results.Total = iterations;
+            results.Ties = 0;
+            results.Wins = new int[hands.Length];
+
+            ulong[] playerHands = new ulong[hands.Length];
+            ulong communityCards = communityCardsPreset;
+
+
+            for (int i = 0; i < iterations; i++)
+            {
+                ulong activePool = Generator.FullDeck;
+                for (int j = 0; j < hands.Length; j++)
+                {
+                    if (hands[j] == 0UL)
+                    {
+                        playerHands[j] = Generator.GenerateRandomHand(2, ref activePool);
+                    }
+                    else
+                    {
+                        activePool ^= hands[j];
+                        playerHands[j] = hands[j];
+                    }
+                }
+                int bitcount = (int)ulong.PopCount(communityCardsPreset);
+                if (bitcount < 5)
+                {
+                    communityCards = Generator.GenerateRandomHand(5 - bitcount, ref activePool) | communityCardsPreset;
+                }
+
+                int winner = Winner(communityCards, playerHands);
+                if (winner == -1)
+                {
+                    results.Ties++;
+                }
+                else
+                {
+                    results.Wins[winner]++;
+                }
+            }
+            return results;
+        }
+        public static int Winner(ulong communityCards, ulong[] playerCards)
         {
             int pcount = playerCards.Length;
 
@@ -82,12 +176,18 @@ namespace PokerCalculator
             int score = -1;
 
             Span<int> scores = stackalloc int[pcount];
+            // All the scores, only needed once beacuse we can only tie at the first type we find.
+            
+
             Span<int> scoresOnlyHand = stackalloc int[pcount];
+            // This gives the players hand a score, this is used to determine the winner if we have a tie.
+
             for (int i = 0; i < pcount; i++)
             {
                 scores[i] = -1;
                 scoresOnlyHand[i] = -1;
             }
+            // this is set beacse -1 is the default value, so if we have a hand that does comply with the type we now that when we dont have a -1.
 
             for (int t = 0; t < 10; t++)
             {
@@ -139,19 +239,40 @@ namespace PokerCalculator
                         bestHandScore = score;
                         bestPlayer = p;
                     }
+                }
 
-                    if (IsTie(scores))
+                if (IsTie(scores)) // if there is a tie between the full hands from any players.
+                {
+                    int highestHandScore = Utility.GetHighest(scores);
+                    for (int i = 0; i < pcount; i++)
+                    {
+                        if (scores[i] != highestHandScore)
+                        {
+                            scoresOnlyHand[i] = -1;
+                        }
+                    }
+                    // Only calculate the tie values for the players that passes the first tie check; meaning that only the players in the tie will have a score.
+
+                    if (IsTie(scoresOnlyHand)) // check if there is a tie in the players hand ONLY, if so then we have an actual game tie.
                     {
                         return -1;
                     }
+                    else
+                    {
+                        return Utility.GetHighestIndex(scoresOnlyHand);
+                        // else return the index of the player with the highest only hand score. this is then the winner.
+                    }
                 }
+
                 if (bestHandScore != -1)
                 {
                     return bestPlayer;
+                    // if we have a winner then return winners index ofc.
                 }
             }
 
-            return -1;
+            throw new InvalidOperationException("[No winner found] bug");
+            // A big has happend here please no
         }
 
         #region Tie helpers
@@ -467,6 +588,20 @@ namespace PokerCalculator
                 }
             }
             return highest;
+        }
+        public static int GetHighestIndex(Span<int> array)
+        {
+            int highest = -1;
+            int highestIndex = -1;
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (array[i] > highest)
+                {
+                    highest = array[i];
+                    highestIndex = i;
+                }
+            }
+            return highestIndex;
         }
         #endregion
         #region Bit
