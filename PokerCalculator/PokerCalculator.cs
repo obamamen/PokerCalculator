@@ -74,213 +74,327 @@ namespace PokerCalculator
         public static int Calculate(ulong communityCards, ulong[] playerCards, Action<string> processEvaluationName = null)
         {
             int pcount = playerCards.Length;
+
+            int p = 0;
+
             int bestPlayer = -1;
             int bestHandScore = -1;
-            int p = 0;
             int score = -1;
 
-            // Evaluate RoyalFlush
-            for (p = 0; p < pcount; p++)
+            Span<int> scores = stackalloc int[pcount];
+            Span<int> scoresOnlyHand = stackalloc int[pcount];
+
+            for (int t = 0; t < 10; t++)
             {
-                score = Calculator.RoyalFlush(communityCards | playerCards[p]);
-                if ((bestHandScore != -1) && (score == bestHandScore))
+                // Evaluate RoyalFlush
+                for (p = 0; p < pcount; p++)
                 {
-                    return -1;
+                    score = -1;
+                    switch (t)
+                    {
+                        case 0:
+                            score = Calculator.RoyalFlush(communityCards | playerCards[p]);
+                            break;
+                        case 1:
+                            score = Calculator.StraightFlush(communityCards | playerCards[p]);
+                            break;
+                        case 2:
+                            score = Calculator.FourOfAKind(communityCards | playerCards[p]);
+                            break;
+                        case 3:
+                            score = Calculator.FullHouse(communityCards | playerCards[p]);
+                            break;
+                        case 4:
+                            score = Calculator.Flush(communityCards | playerCards[p]);
+                            break;
+                        case 5:
+                            score = Calculator.Straight(communityCards | playerCards[p]);
+                            break;
+                        case 6:
+                            score = Calculator.ThreeOfAKind(communityCards | playerCards[p]);
+                            break;
+                        case 7:
+                            score = Calculator.TwoPair(communityCards | playerCards[p]);
+                            break;
+                        case 8:
+                            score = Calculator.Pair(communityCards | playerCards[p]);
+                            break;
+                        case 9:
+                            score = Calculator.HighCard(communityCards | playerCards[p]);
+                            break;
+                    }
+                    if ((bestHandScore != -1) && (score == bestHandScore))
+                    {
+                        return -1;
+                    }
+                    if (score > bestHandScore)
+                    {
+                        bestHandScore = score;
+                        bestPlayer = p;
+                    }
                 }
-                if (score > bestHandScore)
+                if (bestHandScore != -1)
                 {
-                    bestHandScore = score;
-                    bestPlayer = p;
+                    return bestPlayer;
                 }
-            }
-            if (bestHandScore != -1)
-            {
-                return bestPlayer;
-                processEvaluationName("RoyalFlush");
             }
 
-            // Evaluate StraightFlush
-            for (p = 0; p < pcount; p++)
-            {
-                score = Calculator.StraightFlush(communityCards | playerCards[p]);
-                if ((bestHandScore != -1) && (score == bestHandScore))
-                {
-                    return -1;
-                }
-                if (score > bestHandScore)
-                {
-                    bestHandScore = score;
-                    bestPlayer = p;
-                }
-            }
-            if (bestHandScore != -1)
-            {
-                return bestPlayer;
-                Console.WriteLine("StraightFlush");
-            }
+            return -1;
 
-            // Evaluate FourOfAKind
-            for (p = 0; p < pcount; p++)
-            {
-                score = Calculator.FourOfAKind(communityCards | playerCards[p]);
-                if ((bestHandScore != -1) && (score == bestHandScore))
-                {
-                    return -1;
-                }
-                if (score > bestHandScore)
-                {
-                    bestHandScore = score;
-                    bestPlayer = p;
-                }
-            }
-            if (bestHandScore != -1)
-            {
-                return bestPlayer;
-                processEvaluationName("FourOfAKind");
-            }
+            //// Evaluate StraightFlush
+            //for (p = 0; p < pcount; p++)
+            //{
+            //    score = Calculator.StraightFlush(communityCards | playerCards[p]);
+            //    if ((bestHandScore != -1) && (score == bestHandScore))
+            //    {
+            //        return -1;
+            //    }
+            //    if (score > bestHandScore)
+            //    {
+            //        bestHandScore = score;
+            //        bestPlayer = p;
+            //    }
+            //}
+            //if (bestHandScore != -1)
+            //{
+            //    return bestPlayer;
+            //    Console.WriteLine("StraightFlush");
+            //}
 
-            // Evaluate FullHouse
-            for (p = 0; p < pcount; p++)
-            {
-                score = Calculator.FullHouse(communityCards | playerCards[p]);
-                if ((bestHandScore != -1) && (score == bestHandScore))
-                {
-                    return -1;
-                }
-                if (score > bestHandScore)
-                {
-                    bestHandScore = score;
-                    bestPlayer = p;
-                }
-            }
-            if (bestHandScore != -1)
-            {
-                return bestPlayer;
-                processEvaluationName("FullHouse");
-            }
+            //// Evaluate FourOfAKind
+            //for (p = 0; p < pcount; p++)
+            //{
+            //    score = Calculator.FourOfAKind(communityCards | playerCards[p]);
+            //    if ((bestHandScore != -1) && (score == bestHandScore))
+            //    {
+            //        return -1;
+            //    }
+            //    if (score > bestHandScore)
+            //    {
+            //        bestHandScore = score;
+            //        bestPlayer = p;
+            //    }
+            //}
+            //if (bestHandScore != -1)
+            //{
+            //    return bestPlayer;
+            //    processEvaluationName("FourOfAKind");
+            //}
 
-            // Evaluate Flush
-            for (p = 0; p < pcount; p++)
-            {
-                score = Calculator.Flush(communityCards | playerCards[p]);
-                if ((bestHandScore != -1) && (score == bestHandScore))
-                {
-                    return -1;
-                }
-                if (score > bestHandScore)
-                {
-                    bestHandScore = score;
-                    bestPlayer = p;
-                }
-            }
-            if (bestHandScore != -1)
-            {
-                return bestPlayer;
-                processEvaluationName("Flush");
-            }
+            //// Evaluate FullHouse
+            //for (p = 0; p < pcount; p++)
+            //{
+            //    score = Calculator.FullHouse(communityCards | playerCards[p]);
+            //    if ((bestHandScore != -1) && (score == bestHandScore))
+            //    {
+            //        return -1;
+            //    }
+            //    if (score > bestHandScore)
+            //    {
+            //        bestHandScore = score;
+            //        bestPlayer = p;
+            //    }
+            //}
+            //if (bestHandScore != -1)
+            //{
+            //    return bestPlayer;
+            //    processEvaluationName("FullHouse");
+            //}
 
-            // Evaluate Straight
-            for (p = 0; p < pcount; p++)
-            {
-                score = Calculator.Straight(communityCards | playerCards[p]);
-                if ((bestHandScore != -1) && (score == bestHandScore))
-                {
-                    return -1;
-                }
-                if (score > bestHandScore)
-                {
-                    bestHandScore = score;
-                    bestPlayer = p;
-                }
-            }
-            if (bestHandScore != -1)
-            {
-                return bestPlayer;
-                processEvaluationName("Straight");
-            }
+            //// Evaluate Flush
+            //for (p = 0; p < pcount; p++)
+            //{
+            //    score = Calculator.Flush(communityCards | playerCards[p]);
+            //    if ((bestHandScore != -1) && (score == bestHandScore))
+            //    {
+            //        return -1;
+            //    }
+            //    if (score > bestHandScore)
+            //    {
+            //        bestHandScore = score;
+            //        bestPlayer = p;
+            //    }
+            //}
+            //if (bestHandScore != -1)
+            //{
+            //    return bestPlayer;
+            //    processEvaluationName("Flush");
+            //}
 
-            // Evaluate ThreeOfAKind
-            for (p = 0; p < pcount; p++)
-            {
-                score = Calculator.ThreeOfAKind(communityCards | playerCards[p]);
-                if ((bestHandScore != -1) && (score == bestHandScore))
-                {
-                    return -1;
-                }
-                if (score > bestHandScore)
-                {
-                    bestHandScore = score;
-                    bestPlayer = p;
-                }
-            }
-            if (bestHandScore != -1)
-            {
-                return bestPlayer;
-                processEvaluationName("ThreeOfAKind");
-            }
+            //// Evaluate Straight
+            //for (p = 0; p < pcount; p++)
+            //{
+            //    score = Calculator.Straight(communityCards | playerCards[p]);
+            //    if ((bestHandScore != -1) && (score == bestHandScore))
+            //    {
+            //        return -1;
+            //    }
+            //    if (score > bestHandScore)
+            //    {
+            //        bestHandScore = score;
+            //        bestPlayer = p;
+            //    }
+            //}
+            //if (bestHandScore != -1)
+            //{
+            //    return bestPlayer;
+            //    processEvaluationName("Straight");
+            //}
 
-            // Evaluate TwoPair
-            for (p = 0; p < pcount; p++)
-            {
-                score = Calculator.TwoPair(communityCards | playerCards[p]);
-                if ((bestHandScore != -1) && (score == bestHandScore))
-                {
-                    return -1;
-                }
-                if (score > bestHandScore)
-                {
-                    bestHandScore = score;
-                    bestPlayer = p;
-                }
-            }
-            if (bestHandScore != -1)
-            {
-                return bestPlayer;
-                processEvaluationName("TwoPair");
-            }
+            //// Evaluate ThreeOfAKind
+            //for (p = 0; p < pcount; p++)
+            //{
+            //    score = Calculator.ThreeOfAKind(communityCards | playerCards[p]);
+            //    if ((bestHandScore != -1) && (score == bestHandScore))
+            //    {
+            //        return -1;
+            //    }
+            //    if (score > bestHandScore)
+            //    {
+            //        bestHandScore = score;
+            //        bestPlayer = p;
+            //    }
+            //}
+            //if (bestHandScore != -1)
+            //{
+            //    return bestPlayer;
+            //    processEvaluationName("ThreeOfAKind");
+            //}
 
-            // Evaluate Pair
-            for (p = 0; p < pcount; p++)
-            {
-                score = Calculator.Pair(communityCards | playerCards[p]);
-                if ((bestHandScore != -1) && (score == bestHandScore))
-                {
-                    return -1;
-                }
-                if (score > bestHandScore)
-                {
-                    bestHandScore = score;
-                    bestPlayer = p;
-                }
-            }
-            if (bestHandScore != -1)
-            {
-                return bestPlayer;
-                processEvaluationName("Pair");
-            }
+            //// Evaluate TwoPair
+            //for (p = 0; p < pcount; p++)
+            //{
+            //    score = Calculator.TwoPair(communityCards | playerCards[p]);
+            //    if ((bestHandScore != -1) && (score == bestHandScore))
+            //    {
+            //        return -1;
+            //    }
+            //    if (score > bestHandScore)
+            //    {
+            //        bestHandScore = score;
+            //        bestPlayer = p;
+            //    }
+            //}
+            //if (bestHandScore != -1)
+            //{
+            //    return bestPlayer;
+            //    processEvaluationName("TwoPair");
+            //}
 
-            // Evaluate HighCard
-            for (p = 0; p < pcount; p++)
-            {
-                score = Calculator.HighCard(communityCards | playerCards[p]);
-                if ((score == bestHandScore))
-                {
-                    return -1;
-                }
-                if (score > bestHandScore)
-                {
-                    bestHandScore = score;
-                    bestPlayer = p;
-                }
-            }
-            if (bestHandScore != -1)
-            {
-                return bestPlayer;
-                processEvaluationName("HighCard");
-            }
+            //// Evaluate Pair
+            //for (p = 0; p < pcount; p++)
+            //{
+            //    score = Calculator.Pair(communityCards | playerCards[p]);
+            //    if ((bestHandScore != -1) && (score == bestHandScore))
+            //    {
+            //        return -1;
+            //    }
+            //    if (score > bestHandScore)
+            //    {
+            //        bestHandScore = score;
+            //        bestPlayer = p;
+            //    }
+            //}
+            //if (bestHandScore != -1)
+            //{
+            //    return bestPlayer;
+            //    processEvaluationName("Pair");
+            //}
 
-            return bestPlayer;
+            //// Evaluate HighCard
+            //for (p = 0; p < pcount; p++)
+            //{
+            //    score = Calculator.HighCard(communityCards | playerCards[p]);
+            //    if ((score == bestHandScore))
+            //    {
+            //        return -1;
+            //    }
+            //    if (score > bestHandScore)
+            //    {
+            //        bestHandScore = score;
+            //        bestPlayer = p;
+            //    }
+            //}
+            //if (bestHandScore != -1)
+            //{
+            //    return bestPlayer;
+            //    processEvaluationName("HighCard");
+            //}
+
+            //return bestPlayer;
         }
+
+        #region Tie helpers
+        public static int TieUsingHighcards(ulong[] playerHands)
+        {
+            int count = playerHands.Length;
+            ulong[] playerHandsCopy = playerHands.ToArray();
+
+            Span<int> scores = stackalloc int[count];
+            int highest = -1;
+
+            for (int i = 0; i < count; i++)
+            {
+                scores[i] = SingleHighcardRemove(ref playerHands[i]);
+                if (scores[i] > highest)
+                {
+                    highest = scores[i];
+                }
+            }
+
+            int ties = 0;
+            int bestPlayer = -1;
+            for (int i = 0; i < count; i++)
+            {
+                if (scores[i] == highest)
+                {
+                    ties++;
+                    bestPlayer = i;
+                }
+            }
+            if (ties == 1)
+            {
+                return bestPlayer;
+            }
+            if (ties > 1)
+            {
+                return -1;
+            }
+
+            return -1;
+        }
+        public static int SingleHighcardRemove(ref ulong hand)
+        {
+            if (hand == 0UL)
+            {
+                return -1;
+            }
+
+            for (int i = (int)Rank.Ace; i >= (int)Rank.Two; i--)
+            {
+                for (int j = 0; j < Constants.SUITES; j++)
+                {
+                    ulong mask = Utility.SetBit((Rank)i, (Suit)j);
+                    if ((hand & mask) == mask)
+                    {
+                        hand ^= mask;
+                        return i;
+                    }
+                }
+            }
+            return -1;
+        }
+        public static int GetHandScore(ulong hand)
+        {
+            int score = 0;
+            for (int i = 1; i <= 2; i++)
+            {
+                score += (SingleHighcardRemove(ref hand) * i);
+            }
+
+            return score;
+        }
+        #endregion
 
         #region Hand values
         public static int HighCard(ulong hand)
@@ -469,6 +583,44 @@ namespace PokerCalculator
     }
     public static class Utility
     {
+        #region Array
+        public static int[] GetAllTheHighest(Span<int> array, int highest)
+        {
+            int count = 0;
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (array[i] == highest)
+                {
+                    count++;
+                }
+            }
+
+            int[] result = new int[count];
+            int index = 0;
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (array[i] == highest)
+                {
+                    result[index] = i;
+                    index++;
+                }
+            }
+            return result;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetHighest(Span<int> array)
+        {
+            int highest = -1;
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (array[i] > highest)
+                {
+                    highest = array[i];
+                }
+            }
+            return highest;
+        }
+        #endregion
         #region Bit
         public static ulong CreateCard(Rank rank, Suit suit)
         {
