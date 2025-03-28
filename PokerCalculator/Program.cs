@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using PokerCalculator;
 
 namespace PokerCalculator
@@ -9,7 +10,18 @@ namespace PokerCalculator
         {
             Calculator.Setup();
 
-            ulong hand1 = Utility.CreateCard(Rank.Two,Suit.Hearts) | Utility.CreateCard(Rank.Seven, Suit.Clubs);
+            ulong hand1 = Utility.CreateCard(Rank.Ace,Suit.Diamonds) | Utility.CreateCard(Rank.King, Suit.Diamonds);
+            ulong hand2 = Utility.CreateCard(Rank.Ace, Suit.Diamonds) | Utility.CreateCard(Rank.Ace, Suit.Hearts);
+
+            var r = Calculator.Calculate(1000000, 0UL, (ulong)hand1, (ulong)hand2);
+            var r1 = Calculator.Calculate(1000000, 0UL, (ulong)hand2, 0UL);
+            var r2 = Calculator.Calculate(1000000, 0UL, (ulong)hand1, 0UL);
+
+            r.Display();
+            Console.WriteLine();
+            r1.Display();
+            Console.WriteLine();
+            r2.Display();
 
             //Calculator.Calculate(10000000, 0UL, (ulong)hand1, 0UL, 0UL, 0UL).Display();
 
@@ -23,65 +35,63 @@ namespace PokerCalculator
             //    a.Results.Display();
             //}
 
-            List<int> scores = new List<int>();
-            List<ulong> cards = new List<ulong>();
 
-            Calculator.Card card;
+            //List<int> scores = new List<int>();
+            //List<ulong> cards = new List<ulong>();
 
-            card = new(Utility.CreateCard(Rank.Queen,Suit.Diamonds));
-            Console.WriteLine(card.ToString());
 
-            card = new(Utility.CreateCard(Rank.King, Suit.Hearts));
-            Console.WriteLine(card.ToString());
+            //ulong hand;
+            //int iter = 0;
+            //int H = int.MinValue;
+            //for (int i = 0; i < Constants.RANKS; i++)
+            //{
+            //    for (int j = 0; j < Constants.RANKS; j++)
+            //    {
+            //        iter++;
+            //        if (i != j)
+            //        {
 
-            card = new(Utility.CreateCard(Rank.Ten, Suit.Spades));
-            Console.WriteLine(card.ToString());
+            //            hand = Utility.CreateCard(i, 0) | Utility.CreateCard(j, 0);
+            //            var r1 = Calculator.Calculate(200000, 0UL, hand, 0UL);
 
-            card = new(Utility.CreateCard(Rank.Jack, Suit.Clubs));
-            Console.WriteLine(card.ToString());
-            Console.ReadLine();
+            //            scores.Add(r1.Wins[0]);
+            //            cards.Add(hand);
+            //            if (r1.Wins[0] > H)
+            //            {
+            //                H = r1.Wins[0];
+            //            }
+            //        }
 
-            ulong hand;
-            int iter = 0;
-            int lowestScore = int.MaxValue;
-            for (int i = 0; i < Constants.RANKS; i++)
-            {
-                for (int j = 0; j < Constants.RANKS; j++)
-                {
-                    if (i == j)
-                    {
-                        continue;
-                    }
-                    iter++;
+            //        hand = Utility.CreateCard(i, 0) | Utility.CreateCard(j, 1);
+            //        var r = Calculator.Calculate(100000, 0UL, hand, 0UL);
 
-                    hand = Utility.CreateCard(i, 0) | Utility.CreateCard(j, 1);
-                    var r = Calculator.Calculate(200000, 0UL, hand, 0UL, 0UL, 0UL,0UL,0UL);
+            //        scores.Add(r.Wins[0]);
+            //        cards.Add(hand);
+            //        if (r.Wins[0] > H)
+            //        {
+            //            H = r.Wins[0];
+            //        }
 
-                    scores.Add(r.Wins[0]);
-                    cards.Add(hand);
-                    if (r.Wins[0] < lowestScore)
-                    {
-                        lowestScore = r.Wins[0];
-                    }
-                    if (iter % 10 == 0)
-                    {
-                        Console.SetCursorPosition(0, 0);
-                        Console.WriteLine(((float)iter / (13*12)) * 100);
-                    }
-                }
-            }
 
-            Console.Clear();
-            for (int i = 0; i < scores.Count; i++)
-            {
-                if (scores[i] >= lowestScore + 150)
-                {
-                    continue;
-                }
-                Console.WriteLine($"{scores[i]}");
-                Console.WriteLine(Utility.ToNiceBinaryString(cards[i]));
-                Console.WriteLine();
-            }
+            //        if (iter % 10 == 0)
+            //        {
+            //            Console.SetCursorPosition(0, 0);
+            //            Console.WriteLine(((float)iter / (13*12)) * 100);
+            //        }
+            //    }
+            //}
+
+            //Console.Clear();
+            //for (int i = 0; i < scores.Count; i++)
+            //{
+            //    if (scores[i] <= H - 600)
+            //    {
+            //        continue;
+            //    }
+            //    Console.WriteLine($"{scores[i]}");
+            //    Console.WriteLine(Utility.ToNiceBinaryString(cards[i]));
+            //    Console.WriteLine();
+            //}
         }
     }
 }
