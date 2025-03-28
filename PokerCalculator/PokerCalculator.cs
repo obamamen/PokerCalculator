@@ -117,11 +117,55 @@ namespace PokerCalculator
                     Console.WriteLine($"Wins for hand {i + 1}: {Math.Round(((float)Wins[i] / (float)Total) * 10000) / 100:F1}%");
                 }
                 Console.WriteLine($"Ties: {Math.Round(((float)Ties / (float)Total) * 10000) / 100:F2}%");
+                Console.WriteLine();
+                Console.WriteLine($"Total: {Total}");
             }
             // display all the win% and tie% for the Results
             // uses xx.x format for the win% and xx.xx for the tie%
         }
+
+        public struct CalculatorInformation()
+        {
+            public int Iterations;
+            public ulong[] Hands;
+            public ulong CommunityCards;
+            public Results Results;
+            
+            public CalculatorInformation(int Iterations, ulong CommunityCards, ulong[] Hands) : this()
+            {
+                this.Hands = Hands;
+                this.CommunityCards = CommunityCards;
+                this.Iterations = Iterations;
+
+                this.Results = new Results();
+                this.Results.Total = 0;
+                this.Results.Wins = new int[Hands.Length];
+            }
+        }
         delegate int HandEvaluator(ulong hand);
+        public static CalculatorInformation SetupCalculator(int iterations = 500, ulong communityCardsPreset = 0UL, params ulong[] hands)
+        {
+            CalculatorInformation info = new(iterations, communityCardsPreset,hands);
+            return info;
+        }
+        public static void UpdateCalculator(ref CalculatorInformation info)
+        {
+            Results results = Calculate(info.Iterations,info.CommunityCards,info.Hands);
+
+            info.Results.Total += results.Total;
+            info.Results.Ties += results.Ties;
+
+            if (info.Results.Wins.Length != results.Wins.Length)
+            {
+                throw new InvalidOperationException("The amount of hands in the results does not match the amount of hands in the info");
+            }
+
+            for (int i = 0; i < results.Wins.Length; i++)
+            {
+                info.Results.Wins[i] += results.Wins[i];
+            }
+        }
+
         public static void Setup()
         {
             for (int i = 0; i < (int)Rank.RANKS; i++)
