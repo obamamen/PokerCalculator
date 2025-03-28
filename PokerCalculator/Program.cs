@@ -26,6 +26,21 @@ namespace PokerCalculator
             List<int> scores = new List<int>();
             List<ulong> cards = new List<ulong>();
 
+            Calculator.Card card;
+
+            card = new(Utility.CreateCard(Rank.Queen,Suit.Diamonds));
+            Console.WriteLine(card.ToString());
+
+            card = new(Utility.CreateCard(Rank.King, Suit.Hearts));
+            Console.WriteLine(card.ToString());
+
+            card = new(Utility.CreateCard(Rank.Ten, Suit.Spades));
+            Console.WriteLine(card.ToString());
+
+            card = new(Utility.CreateCard(Rank.Jack, Suit.Clubs));
+            Console.WriteLine(card.ToString());
+            Console.ReadLine();
+
             ulong hand;
             int iter = 0;
             int lowestScore = int.MaxValue;

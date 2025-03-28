@@ -95,6 +95,36 @@ namespace PokerCalculator
     }
     public static class Calculator
     {
+        public struct Card
+        {
+            public Rank Rank;
+            public Suit Suit;
+
+            public Card(Rank rank, Suit suit)
+            {
+                Rank = rank;
+                Suit = suit;
+            }
+
+            public Card(ulong card)
+            {
+                Suit = (Suit)((ulong)BitOperations.TrailingZeroCount(card) / (int)Rank.RANKS);
+                Rank = (Rank)(ulong)BitOperations.TrailingZeroCount(Utility.HandToNormalized(card));
+            }
+
+            public readonly ulong ToUlong()
+            {
+                return Utility.SetBit(Rank, Suit);
+            }
+
+            public readonly override string ToString()
+            {
+                return $"{Ranks[(int)Rank]}{Suits[(int)Suit]}";
+            }
+
+            static readonly char[] Ranks = { '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A' };
+            static readonly char[] Suits = { 'H', 'D', 'C', 'S' };
+        }
         public struct Results
         {
             public int Total;
