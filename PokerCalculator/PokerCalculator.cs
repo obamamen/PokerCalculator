@@ -125,11 +125,48 @@ namespace PokerCalculator
             static readonly char[] Ranks = { '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A' };
             static readonly char[] Suits = { 'H', 'D', 'C', 'S' };
         }
+        public enum WinTypes {
+            RoyalFlush,
+            StraightFlush,
+            FourOfAKind,
+            FullHouse,
+            Flush,
+            Straight,
+            ThreeOfAKind,
+            TwoPair,
+            OnePair,
+            HighCard
+        }
         public struct Results
         {
             public int Total;
             public int Ties;
             public int[] Wins;
+            //public int[] RoyalFlush;
+            //public int[] StraightFlush;
+            //public int[] FourOfAKind;
+            //public int[] FullHouse;
+            //public int[] Flush;
+            //public int[] Straight;
+            //public int[] ThreeOfAKind;
+            //public int[] TwoPair;
+            //public int[] OnePair;
+            //public int[] HighCard;
+
+            //public void InitializeArays(int numHands)
+            //{
+            //    Wins = new int[numHands];
+            //    RoyalFlush = new int[numHands];
+            //    StraightFlush = new int[numHands];
+            //    FourOfAKind = new int[numHands];
+            //    FullHouse = new int[numHands];
+            //    Flush = new int[numHands];
+            //    Straight = new int[numHands];
+            //    ThreeOfAKind = new int[numHands];
+            //    TwoPair = new int[numHands];
+            //    OnePair = new int[numHands];
+            //    HighCard = new int[numHands];
+            //}
             public readonly int GetLosses(int index)
             {
                 if (index < 0)
@@ -156,7 +193,6 @@ namespace PokerCalculator
             // display all the win% and tie% for the Results
             // uses xx.x format for the win% and xx.xx for the tie%
         }
-
         public struct CalculatorInformation()
         {
             public int Iterations;

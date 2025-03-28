@@ -10,18 +10,12 @@ namespace PokerCalculator
         {
             Calculator.Setup();
 
-            ulong hand1 = Utility.CreateCard(Rank.Ace,Suit.Diamonds) | Utility.CreateCard(Rank.King, Suit.Diamonds);
+            ulong hand1 = Utility.CreateCard(Rank.Ace,Suit.Spades) | Utility.CreateCard(Rank.Ace, Suit.Clubs);
             ulong hand2 = Utility.CreateCard(Rank.Ace, Suit.Diamonds) | Utility.CreateCard(Rank.Ace, Suit.Hearts);
 
-            var r = Calculator.Calculate(1000000, 0UL, (ulong)hand1, (ulong)hand2);
-            var r1 = Calculator.Calculate(1000000, 0UL, (ulong)hand2, 0UL);
-            var r2 = Calculator.Calculate(1000000, 0UL, (ulong)hand1, 0UL);
+            var r = Calculator.Calculate(5000000, 0UL, (ulong)hand1, 0UL);
 
             r.Display();
-            Console.WriteLine();
-            r1.Display();
-            Console.WriteLine();
-            r2.Display();
 
             //Calculator.Calculate(10000000, 0UL, (ulong)hand1, 0UL, 0UL, 0UL).Display();
 
