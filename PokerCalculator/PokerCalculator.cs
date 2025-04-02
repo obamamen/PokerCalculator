@@ -9,35 +9,67 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Numerics;
 using static PokerCalculator.Calculator;
+using System.Diagnostics;
 
 namespace PokerCalculator
 {
     public static class Testing
     {
+        private static Stopwatch stopwatch = new Stopwatch();
+        private static void DisplayStopWatch()
+        {
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine("Elapsed Milliseconds: " + stopwatch.ElapsedMilliseconds);
+            Console.ResetColor();
+        }
         public static void TestPocketAces(int iter = 2000000)
         {
             Console.WriteLine("Testing pocket aces");
+
+            stopwatch.Start();
             Calculator.Results results = Calculator.Calculate(iter, 0UL, Utility.CreateCard(12, 0) | Utility.CreateCard(12, 1), 0UL);
+            stopwatch.Stop();
+
             results.Display();
+            DisplayStopWatch();
+            Console.WriteLine();
         }
         public static void TestOffsuit27(int iter = 2000000)
         {
             Console.WriteLine("Testing offsuit 2 7");
+
+            stopwatch.Start();
             Calculator.Results results = Calculator.Calculate(iter, 0UL, Utility.CreateCard(2, 0) | Utility.CreateCard(7, 1), 0UL);
+            stopwatch.Stop();
+
             results.Display();
+            DisplayStopWatch();
+            Console.WriteLine();
         }
         public static void Test5050(int iter = 2000000)
         {
             Console.WriteLine("Testing a fair 50 50");
+
+            stopwatch.Start();
             Calculator.Results results = Calculator.Calculate(iter, 0UL, 0UL, 0UL);
+            stopwatch.Stop();
+
             results.Display();
+            DisplayStopWatch();
+            Console.WriteLine();
         }
 
         public static void Test252525(int iter = 2000000)
         {
             Console.WriteLine("Testing a fair 25 25 25");
+
+            stopwatch.Start();
             Calculator.Results results = Calculator.Calculate(iter, 0UL, 0UL, 0UL, 0UL, 0UL);
+            stopwatch.Stop();
+
             results.Display();
+            DisplayStopWatch();
+            Console.WriteLine();
         }
     }
     public static class Constants
@@ -187,8 +219,9 @@ namespace PokerCalculator
                     Console.WriteLine($"Wins for hand {i + 1}: {Math.Round(((float)Wins[i] / (float)Total) * 10000) / 100:F1}%");
                 }
                 Console.WriteLine($"Ties: {Math.Round(((float)Ties / (float)Total) * 10000) / 100:F2}%");
-                Console.WriteLine();
-                Console.WriteLine($"Total: {Total}");
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.WriteLine($"Total Simulations: {Total}");
+                Console.ForegroundColor = ConsoleColor.White;
             }
             // display all the win% and tie% for the Results
             // uses xx.x format for the win% and xx.xx for the tie%
