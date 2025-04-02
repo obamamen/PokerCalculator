@@ -19,9 +19,9 @@ namespace PokerCalculator
             //r.Display();
 
             Testing.TestPocketAces(4000000);
-            Testing.Test5050(4000000);
+            Testing.Test5050(8000000);
             Testing.Test252525(4000000);
-            Testing.TestOffsuit27(4000000);
+            Testing.TestOffsuit27(6000000);
 
             //Calculator.Calculate(10000000, 0UL, (ulong)hand1, 0UL, 0UL, 0UL).Display();
 

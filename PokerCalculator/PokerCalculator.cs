@@ -16,6 +16,12 @@ namespace PokerCalculator
     public static class Testing
     {
         private static Stopwatch stopwatch = new Stopwatch();
+        private static void TitleDisplay(string title)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(title);
+            Console.ResetColor();
+        }
         private static void DisplayStopWatch()
         {
             Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -24,9 +30,9 @@ namespace PokerCalculator
         }
         public static void TestPocketAces(int iter = 2000000)
         {
-            Console.WriteLine("Testing pocket aces");
+            TitleDisplay("Testing pocket aces");
 
-            stopwatch.Start();
+            stopwatch.Restart();
             Calculator.Results results = Calculator.Calculate(iter, 0UL, Utility.CreateCard(12, 0) | Utility.CreateCard(12, 1), 0UL);
             stopwatch.Stop();
 
@@ -36,9 +42,9 @@ namespace PokerCalculator
         }
         public static void TestOffsuit27(int iter = 2000000)
         {
-            Console.WriteLine("Testing offsuit 2 7");
+            TitleDisplay("Testing offsuit 2 7");
 
-            stopwatch.Start();
+            stopwatch.Restart();
             Calculator.Results results = Calculator.Calculate(iter, 0UL, Utility.CreateCard(2, 0) | Utility.CreateCard(7, 1), 0UL);
             stopwatch.Stop();
 
@@ -48,9 +54,9 @@ namespace PokerCalculator
         }
         public static void Test5050(int iter = 2000000)
         {
-            Console.WriteLine("Testing a fair 50 50");
+            TitleDisplay("Testing a fair 50 50");
 
-            stopwatch.Start();
+            stopwatch.Restart();
             Calculator.Results results = Calculator.Calculate(iter, 0UL, 0UL, 0UL);
             stopwatch.Stop();
 
@@ -61,9 +67,9 @@ namespace PokerCalculator
 
         public static void Test252525(int iter = 2000000)
         {
-            Console.WriteLine("Testing a fair 25 25 25");
+            TitleDisplay("Testing a fair 25 25 25");
 
-            stopwatch.Start();
+            stopwatch.Restart();
             Calculator.Results results = Calculator.Calculate(iter, 0UL, 0UL, 0UL, 0UL, 0UL);
             stopwatch.Stop();
 
