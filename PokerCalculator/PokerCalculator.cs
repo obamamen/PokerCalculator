@@ -133,6 +133,7 @@ namespace PokerCalculator
     }
     public static class Calculator
     {
+        public static bool MT = false;
         public struct Card
         {
             public Rank Rank;
@@ -226,7 +227,7 @@ namespace PokerCalculator
                 }
                 Console.WriteLine($"Ties: {Math.Round(((float)Ties / (float)Total) * 10000) / 100:F2}%");
                 Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.WriteLine($"Total Simulations: {Total}");
+                Console.WriteLine($"Total Simulations: {Total.ToString("N0").Replace(",", "_")}");
                 Console.ForegroundColor = ConsoleColor.White;
             }
             // display all the win% and tie% for the Results
@@ -285,55 +286,120 @@ namespace PokerCalculator
         public static ulong[] Highcards = new ulong[(int)Rank.RANKS];
         public static Results Calculate(int iterations = 100000, ulong communityCardsPreset = 0UL, params ulong[] hands)
         {
-
-            Results results = new Results();
-            results.Total = iterations;
-            results.Ties = 0;
-            results.Wins = new int[hands.Length];
-
-            ulong[] playerHands = new ulong[hands.Length];
-            ulong communityCards = communityCardsPreset;
-
-
-            for (int i = 0; i < iterations; i++)
+            Results results = new Results
             {
-                ulong activePool = Generator.FullDeck;
-                // get a pool of all the valid poker cards
+                Total = iterations,
+                Ties = 0,
+                Wins = new int[hands.Length]
+            };
 
-                for (int j = 0; j < hands.Length; j++)
-                {
-                    if (hands[j] == 0UL)
-                    // if the hand is empty then we generate a random hand, empty meaning that the user has not set a hand.
+            if (MT)
+            {
+
+                object lockObj = new object();
+
+                Parallel.For(0, iterations,
+                    () => (ties: 0, wins: new int[hands.Length]),
+
+                    (i, state, local) =>
                     {
-                        playerHands[j] = Generator.GenerateRandomHand(2, ref activePool);
+                        ulong activePool = Generator.FullDeck;
+                        ulong[] playerHands = new ulong[hands.Length];
+                        ulong communityCards = communityCardsPreset;
+
+                        for (int j = 0; j < hands.Length; j++)
+                        {
+                            if (hands[j] == 0UL)
+                            {
+                                playerHands[j] = Generator.GenerateRandomHand(2, ref activePool);
+                            }
+                            else
+                            {
+                                activePool ^= hands[j];
+                                playerHands[j] = hands[j];
+                            }
+                        }
+
+                        int bitcount = (int)ulong.PopCount(communityCardsPreset);
+                        if (bitcount < 5)
+                        {
+                            communityCards = Generator.GenerateRandomHand(5 - bitcount, ref activePool) | communityCardsPreset;
+                        }
+
+                        int winner = Winner(communityCards, playerHands);
+                        if (winner == -1)
+                        {
+                            local.ties++;
+                        }
+                        else
+                        {
+                            local.wins[winner]++;
+                        }
+
+                        return local;
+                    },
+
+                    local =>
+                    {
+                        lock (lockObj)
+                        {
+                            results.Ties += local.ties;
+                            for (int i = 0; i < hands.Length; i++)
+                            {
+                                results.Wins[i] += local.wins[i];
+                            }
+                        }
+                    }
+
+                );
+
+                return results;
+            } else
+            {
+                ulong[] playerHands = new ulong[hands.Length];
+                ulong communityCards = communityCardsPreset;
+
+                for (int i = 0; i < iterations; i++)
+                {
+                    ulong activePool = Generator.FullDeck;
+                    // get a pool of all the valid poker cards
+
+                    for (int j = 0; j < hands.Length; j++)
+                    {
+                        if (hands[j] == 0UL)
+                        // if the hand is empty then we generate a random hand, empty meaning that the user has not set a hand.
+                        {
+                            playerHands[j] = Generator.GenerateRandomHand(2, ref activePool);
+                        }
+                        else
+                        // the user has set a hand so we use that hand and remove it from the active pool.
+                        {
+                            activePool ^= hands[j];
+                            playerHands[j] = hands[j];
+                        }
+                    }
+
+                    int bitcount = (int)ulong.PopCount(communityCardsPreset);
+                    if (bitcount < 5)
+                    {
+                        communityCards = Generator.GenerateRandomHand(5 - bitcount, ref activePool) | communityCardsPreset;
+                    }
+                    // here we generate the community cards, if the user has any set community cards we keep it and generate the rest.
+
+                    int winner = Winner(communityCards, playerHands);
+                    if (winner == -1)
+                    {
+                        results.Ties++;
                     }
                     else
-                    // the user has set a hand so we use that hand and remove it from the active pool.
                     {
-                        activePool ^= hands[j];
-                        playerHands[j] = hands[j];
+                        results.Wins[winner]++;
                     }
                 }
-
-                int bitcount = (int)ulong.PopCount(communityCardsPreset);
-                if (bitcount < 5)
-                {
-                    communityCards = Generator.GenerateRandomHand(5 - bitcount, ref activePool) | communityCardsPreset;
-                }
-                // here we generate the community cards, if the user has any set community cards we keep it and generate the rest.
-
-                int winner = Winner(communityCards, playerHands);
-                if (winner == -1)
-                {
-                    results.Ties++;
-                }
-                else
-                {
-                    results.Wins[winner]++;
-                }
+                return results;
             }
-            return results;
         }
+
         public static int Winner(ulong communityCards, ulong[] playerCards)
         {
             int pcount = playerCards.Length;
@@ -920,7 +986,7 @@ namespace PokerCalculator
     }
     public static class Generator
     {
-        public static Random R = new Random();
+        public static Random R = Random.Shared;
 
         public static readonly ulong FullDeck = GenerateFullDeck();
 
