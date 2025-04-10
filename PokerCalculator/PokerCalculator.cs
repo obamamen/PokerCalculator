@@ -268,7 +268,7 @@ namespace PokerCalculator
         delegate int HandEvaluator(ulong hand);
         public static CalculatorInformation SetupCalculator(int iterations = 500, ulong communityCardsPreset = 0UL, params ulong[] hands)
         {
-            CalculatorInformation info = new(iterations, communityCardsPreset,hands);
+            CalculatorInformation info = new(iterations, communityCardsPreset, hands);
             return info;
         }
         public static void UpdateCalculator(ref CalculatorInformation info)
@@ -584,7 +584,7 @@ namespace PokerCalculator
 
         // currently not in use.
 
-        public static int SingleHighcardRemove(ref ulong hand)
+        internal static int SingleHighcardRemove(ref ulong hand)
         {
             if (hand == 0UL)
             {
@@ -608,7 +608,7 @@ namespace PokerCalculator
 
             return -1;
         }
-        public static int GetHandScore(ulong hand)
+        internal static int GetHandScore(ulong hand)
         {
             int score = SingleHighcardRemove(ref hand)+Constants.RANKS*2;
 
@@ -620,7 +620,7 @@ namespace PokerCalculator
 
             return score;
         }
-        public static bool IsTie(Span<int> scores, bool ignoreNegatives = true)
+        internal static bool IsTie(Span<int> scores, bool ignoreNegatives = true)
         {
             int highest = Utility.GetHighest(scores);
             int count = 0;
@@ -641,7 +641,7 @@ namespace PokerCalculator
         #endregion
 
         #region Hand values
-        public static int HighCard(ulong hand)
+        private static int HighCard(ulong hand)
         {
             Utility.ThrowBasedOnHand(hand);
 
@@ -656,7 +656,7 @@ namespace PokerCalculator
 
             throw new ArgumentException($"Hand does not contain any valid cards: {Utility.ToBinaryString(hand)};");
         }
-        public static int Pair(ulong hand)
+        private static int Pair(ulong hand)
         {
             if (hand == 0UL)
             {
@@ -673,7 +673,7 @@ namespace PokerCalculator
 
             return -1;
         }
-        public static int TwoPair(ulong hand)
+        private static int TwoPair(ulong hand)
         {
             Utility.ThrowBasedOnHand(hand);
 
@@ -707,7 +707,7 @@ namespace PokerCalculator
 
             return -1;
         }
-        public static int ThreeOfAKind(ulong hand)
+        private static int ThreeOfAKind(ulong hand)
         {
             Utility.ThrowBasedOnHand(hand);
 
@@ -721,7 +721,7 @@ namespace PokerCalculator
 
             return -1;
         }
-        public static int Straight(ulong hand)
+        private static int Straight(ulong hand)
         {
             Utility.ThrowBasedOnHand(hand);
             hand = Utility.HandToNormalized(hand);
@@ -738,7 +738,7 @@ namespace PokerCalculator
 
             return -1;
         }
-        public static int Flush(ulong hand)
+        private static int Flush(ulong hand)
         {
             Utility.ThrowBasedOnHand(hand);
             ulong section;
@@ -752,7 +752,7 @@ namespace PokerCalculator
             }
             return -1;
         }
-        public static int FullHouse(ulong hand)
+        private static int FullHouse(ulong hand)
         {
             Utility.ThrowBasedOnHand(hand);
             int three = ThreeOfAKind(hand);
@@ -780,7 +780,7 @@ namespace PokerCalculator
             // here we return the biggest of the 2 "sets", is needed for tie handling.
 
         }
-        public static int FourOfAKind(ulong hand)
+        private static int FourOfAKind(ulong hand)
         {
             Utility.ThrowBasedOnHand(hand);
 
@@ -794,7 +794,7 @@ namespace PokerCalculator
 
             return -1;
         }
-        public static int StraightFlush(ulong hand)
+        private static int StraightFlush(ulong hand)
         {
             Utility.ThrowBasedOnHand(hand);
             int highest = -1;
@@ -822,7 +822,7 @@ namespace PokerCalculator
 
             return highest;
         }
-        public static int RoyalFlush(ulong hand)
+        private static int RoyalFlush(ulong hand)
         {
             Utility.ThrowBasedOnHand(hand);
             ulong section;
@@ -843,7 +843,7 @@ namespace PokerCalculator
         }
         #endregion
     }
-    public static class Utility
+    internal static class Utility
     {
         #region Array
         //public static int[] GetAllTheHighest(Span<int> array, int highest)
@@ -873,7 +873,7 @@ namespace PokerCalculator
         // unsed code
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetHighest(Span<int> array)
+        internal static int GetHighest(Span<int> array)
         {
             int highest = -1;
             for (int i = 0; i < array.Length; i++)
@@ -885,7 +885,7 @@ namespace PokerCalculator
             }
             return highest;
         }
-        public static int GetHighestIndex(Span<int> array)
+        internal static int GetHighestIndex(Span<int> array)
         {
             int highest = -1;
             int highestIndex = -1;
@@ -901,19 +901,19 @@ namespace PokerCalculator
         }
         #endregion
         #region Bit
-        public static ulong CreateCard(Rank rank, Suit suit)
+        internal static ulong CreateCard(Rank rank, Suit suit)
         {
             return SetBit(rank, suit);
         }
-        public static ulong CreateCard(int rank, int suit, bool DO_NOT_USE = true)
+        internal static ulong CreateCard(int rank, int suit, bool DO_NOT_USE = true)
         {
             return SetBit((Rank)rank, (Suit)suit);
         }
-        public static void AddCard(ref ulong cards, Rank rank, Suit suit)
+        internal static void AddCard(ref ulong cards, Rank rank, Suit suit)
         {
             cards |= CreateCard(rank, suit);
         }
-        public static bool HasCard(ulong cards, Rank rank, Suit suit)
+        internal static bool HasCard(ulong cards, Rank rank, Suit suit)
         {
             return (cards & SetBit(rank, suit)) != 0;
         }
@@ -1009,13 +1009,13 @@ namespace PokerCalculator
         }
         #endregion
     }
-    public static class Generator
+    internal static class Generator
     {
-        public static Random R = Random.Shared;
+        internal static Random R = Random.Shared;
 
-        public static readonly ulong FullDeck = GenerateFullDeck();
+        internal static readonly ulong FullDeck = GenerateFullDeck();
 
-        public static ulong GenerateRandomHand(int count, ref ulong activePool)
+        internal static ulong GenerateRandomHand(int count, ref ulong activePool)
         {
             if (ulong.PopCount(activePool) < (ulong)count)
             {
@@ -1035,7 +1035,7 @@ namespace PokerCalculator
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetRandomSetBit(ulong bitmask, Random rand)
+        internal static int GetRandomSetBit(ulong bitmask, Random rand)
         {
             int popCount = (int)ulong.PopCount(bitmask);
             int target = rand.Next(popCount) + 1;
@@ -1056,7 +1056,7 @@ namespace PokerCalculator
             }
             return bitIndex;
         }
-        private static ulong GenerateFullDeck()
+        internal static ulong GenerateFullDeck()
         {
             ulong deck = 0UL;
             for (int suit = 0; suit < Constants.SUITES; suit++)
