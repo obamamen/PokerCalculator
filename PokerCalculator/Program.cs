@@ -9,12 +9,11 @@ namespace PokerCalculator
     {
         static void Main(string[] args)
         {
-            Calculator.Setup();
-            Calculator.MT = true;
+            Calculator.Setup(true);
 
             ulong hand1 = Utility.CreateCard(Rank.Queen, Suit.Clubs) | Utility.CreateCard(Rank.Ace, Suit.Clubs);
 
-            var a = Calculator.SetupCalculator(100_000, 0UL, (ulong)hand1, 0UL);
+            var a = Calculator.SetupCalculator(250_000, 0UL, 0UL, 0UL);
             Stopwatch s = new Stopwatch();
             while (true)
             {
@@ -31,7 +30,6 @@ namespace PokerCalculator
                 s.Stop();
                 Console.WriteLine($"Time: {s.ElapsedMilliseconds}ms");
             }
-
         }
     }
 }

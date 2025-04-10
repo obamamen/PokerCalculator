@@ -133,7 +133,7 @@ namespace PokerCalculator
     }
     public static class Calculator
     {
-        public static bool MT = false;
+        private static bool MT = false;
         public struct Card
         {
             public Rank Rank;
@@ -178,6 +178,8 @@ namespace PokerCalculator
         }
         public struct Results
         {
+            public static int DECIMALS = 1;
+
             public int Total;
             public int Ties;
             public int[] Wins;
@@ -206,6 +208,18 @@ namespace PokerCalculator
             //    OnePair = new int[numHands];
             //    HighCard = new int[numHands];
             //}
+
+            public readonly double GetHandPercent(int hand)
+            {
+                double p = Math.Round((double)Wins[hand] / (double)Total * Math.Pow(10, DECIMALS+2));
+                return p / Math.Pow(10, DECIMALS);
+            }
+            public readonly double GetTiePercent()
+            {
+                double p = Math.Round((double)Ties / (double)Total * Math.Pow(10, DECIMALS+3));
+                return p / Math.Pow(10, DECIMALS+1);
+            }
+
             public readonly int GetLosses(int index)
             {
                 if (index < 0)
@@ -223,9 +237,9 @@ namespace PokerCalculator
             {
                 for (int i = 0; i < Wins.Length; i++)
                 {
-                    Console.WriteLine($"Wins for hand {i + 1}: {Math.Round(((float)Wins[i] / (float)Total) * 10000) / 100:F1}%");
+                    Console.WriteLine($"Wins for hand {i + 1}: {GetHandPercent(i)}%");
                 }
-                Console.WriteLine($"Ties: {Math.Round(((float)Ties / (float)Total) * 10000) / 100:F2}%");
+                Console.WriteLine($"Ties: {GetTiePercent()}%");
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 Console.WriteLine($"Total Simulations: {Total.ToString("N0").Replace(",", "_")}");
                 Console.ForegroundColor = ConsoleColor.White;
@@ -275,14 +289,24 @@ namespace PokerCalculator
             }
         }
 
-        public static void Setup()
+        public static void Setup(bool MultiThreading = false)
         {
+            Calculator.ChanceMT(MultiThreading);
+
             for (int i = 0; i < (int)Rank.RANKS; i++)
             {
                 Highcards[i] = Utility.ApplyNormalized(Utility.CreateNomilized((Rank)i));
             }
             // precalculate the normalized values for the highcards
+
+            if (Calculator.MT) { ; }
         }
+
+        public static void ChanceMT(bool MultiThreading = false)
+        {
+            MT = MultiThreading;
+        }
+
         public static ulong[] Highcards = new ulong[(int)Rank.RANKS];
         public static Results Calculate(int iterations = 100000, ulong communityCardsPreset = 0UL, params ulong[] hands)
         {
@@ -354,7 +378,8 @@ namespace PokerCalculator
                 );
 
                 return results;
-            } else
+            }
+            else
             {
                 ulong[] playerHands = new ulong[hands.Length];
                 ulong communityCards = communityCardsPreset;
