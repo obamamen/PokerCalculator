@@ -9,15 +9,13 @@ namespace PokerCalculator
     {
         static void Main(string[] args)
         {
-            Calculator.Setup();
+            Calculator.Setup(true, 250);
+            Stopwatch s = new Stopwatch();
 
             ulong hand1 = Utility.CreateCard(Rank.Ace, Suit.Hearts) | Utility.CreateCard(Rank.Ace, Suit.Clubs);
 
-            ulong hand2 = Utility.CreateCard(Rank.Two, Suit.Hearts) | Utility.CreateCard(Rank.Three, Suit.Clubs);
 
-
-            var a = Calculator.SetupCalculator(2_000, 0UL, hand1, hand2);
-            Stopwatch s = new Stopwatch();
+            var a = Calculator.SetupCalculator(50_000, 0UL, 0UL, 0UL);
             while (true)
             {
                 s.Restart();

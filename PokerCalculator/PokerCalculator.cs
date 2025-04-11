@@ -134,6 +134,7 @@ namespace PokerCalculator
     public static class Calculator
     {
         private static bool MT = false;
+        private static int MTCount = 1;
         public struct Card
         {
             public Rank Rank;
@@ -289,9 +290,10 @@ namespace PokerCalculator
             }
         }
 
-        public static void Setup(bool MultiThreading = false)
+        public static void Setup(bool MultiThreading = false, int MTCount = 1)
         {
-            Calculator.ChanceMT(MultiThreading);
+            Calculator.ChangeMT(MultiThreading);
+            Calculator.ChangeMTCount(MTCount);
 
             for (int i = 0; i < (int)Rank.RANKS; i++)
             {
@@ -302,9 +304,14 @@ namespace PokerCalculator
             if (Calculator.MT) { ; }
         }
 
-        public static void ChanceMT(bool MultiThreading = false)
+        public static void ChangeMT(bool MultiThreading)
         {
             MT = MultiThreading;
+        }
+
+        public static void ChangeMTCount(int MTCount)
+        {
+            Calculator.MTCount = MTCount;
         }
 
         public static ulong[] Highcards = new ulong[(int)Rank.RANKS];
@@ -312,7 +319,7 @@ namespace PokerCalculator
         {
             Results results = new Results
             {
-                Total = iterations,
+                Total = (iterations / MTCount) * MTCount,
                 Ties = 0,
                 Wins = new int[hands.Length]
             };
@@ -322,42 +329,48 @@ namespace PokerCalculator
 
                 object lockObj = new object();
 
-                Parallel.For(0, iterations,
+                Parallel.For(0, iterations/MTCount,
                     () => (ties: 0, wins: new int[hands.Length]),
 
                     (i, state, local) =>
                     {
-                        ulong activePool = Generator.FullDeck;
                         ulong[] playerHands = new ulong[hands.Length];
                         ulong communityCards = communityCardsPreset;
 
-                        for (int j = 0; j < hands.Length; j++)
+                        for (int I = 0; I < MTCount; I++)
                         {
-                            if (hands[j] == 0UL)
+
+                            ulong activePool = Generator.FullDeck;
+
+
+                            for (int j = 0; j < hands.Length; j++)
                             {
-                                playerHands[j] = Generator.GenerateRandomHand(2, ref activePool);
+                                if (hands[j] == 0UL)
+                                {
+                                    playerHands[j] = Generator.GenerateRandomHand(2, ref activePool);
+                                }
+                                else
+                                {
+                                    activePool ^= hands[j];
+                                    playerHands[j] = hands[j];
+                                }
+                            }
+
+                            int bitcount = (int)ulong.PopCount(communityCardsPreset);
+                            if (bitcount < 5)
+                            {
+                                communityCards = Generator.GenerateRandomHand(5 - bitcount, ref activePool) | communityCardsPreset;
+                            }
+
+                            int winner = Winner(communityCards, playerHands);
+                            if (winner == -1)
+                            {
+                                local.ties++;
                             }
                             else
                             {
-                                activePool ^= hands[j];
-                                playerHands[j] = hands[j];
+                                local.wins[winner]++;
                             }
-                        }
-
-                        int bitcount = (int)ulong.PopCount(communityCardsPreset);
-                        if (bitcount < 5)
-                        {
-                            communityCards = Generator.GenerateRandomHand(5 - bitcount, ref activePool) | communityCardsPreset;
-                        }
-
-                        int winner = Winner(communityCards, playerHands);
-                        if (winner == -1)
-                        {
-                            local.ties++;
-                        }
-                        else
-                        {
-                            local.wins[winner]++;
                         }
 
                         return local;
